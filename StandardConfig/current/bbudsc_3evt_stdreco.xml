@@ -31,18 +31,16 @@
      
      <processor name="MyClupatraProcessor" />
       
-     <processor name="MySiliconTracking_MarlinTrk"/>  
-     <processor name="MyForwardTracking"/><!--create fwd tracks in parallel -->
-     
-     <processor name="MyTrackSubsetProcessor" /><!-- combine Silicon and Forward Tracking -->     
-     
-     <processor name="MyFullLDCTracking_MarlinTrk"/>  
+     <XXXprocessor name="MySiliconTracking_MarlinTrk"/>  
+     <XXXprocessor name="MyForwardTracking"/><!--create fwd tracks in parallel -->
+     <XXXprocessor name="MyTrackSubsetProcessor" /><!-- combine Silicon and Forward Tracking -->     
+     <XXXprocessor name="MyFullLDCTracking_MarlinTrk"/>  
       
      <!-- ========== the track cheater   ================= -->
-     <!--processor name="MyTruthTracker"/-->
+     <processor name="MyTruthTracker"/>
      
      <processor name="MyV0Finder"/>               
-     <XXXXprocessor name="MyKinkFinder"/>         
+     <processor name="MyKinkFinder"/>         
      
      <!-- ========== calorimeter digitization and PFA ======= -->
      <processor name="MyNewLDCCaloDigi"/>    
@@ -65,17 +63,19 @@
      
      <processor name="MyLCIOOutputProcessor"/>
      <processor name="DSTOutput"/>
-   </execute>
 
+     <processor name="CEDViewer"/>     
+   </execute>
+0
    <global>
       <parameter name="LCIOInputFiles">
         ./bbudsc_3evt.slcio
       </parameter>
       <parameter name="GearXMLFile" value="GearOutput.xml"/>
-      <parameter name="MaxRecordNumber" value="0"/>
-      <parameter name="SkipNEvents" value="0"/>
+      <parameter name="MaxRecordNumber" value=""/>
+      <parameter name="SkipNEvents" value="1"/>
       <parameter name="SupressCheck" value="false"/>
-      <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> MESSAGE </parameter>
+      <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> DEBUG1 MESSAGE </parameter>
       <parameter name="RandomSeed" value="1234567890" />
    </global>
 
@@ -735,7 +735,7 @@
   <!--Use MultipleScattering in Fit-->
   <parameter name="MultipleScatteringOn" type="bool">true </parameter>
   <!--Name of the output track collection-->
-  <parameter name="OutputTrackCollectionName" type="string" lcioOutType="Track">TruthTracks </parameter>
+  <parameter name="OutputTrackCollectionName" type="string" lcioOutType="Track"> MarlinTrkTracks </parameter>
   <!--Name of the MCParticle-Track Relations collection for output tracks-->
   <parameter name="OutputTrackRelCollection" type="string" lcioOutType="LCRelation">TruthTracksMCP </parameter>
   <!--Smooth All Mesurement Sites in Fit-->
@@ -744,6 +744,8 @@
   <parameter name="TrackerHitsInputCollections" type="StringVec" lcioInType="TrackerHit">VXDTrackerHits SITSpacePoints FTDPixelTrackerHits FTDSpacePoints TPCTrackerHits SETTrackerHits  </parameter>
   <!--Name of the lcrelation collections, that link the TrackerHits to their SimTrackerHits. Have to be in same order as TrackerHitsInputCollections!!!-->
   <parameter name="TrackerHitsRelInputCollections" type="StringVec" lcioInType="LCRelation">VXDTrackerHitRelations SITSpacePointRelations FTDPixelTrackerHitRelations FTDSpacePointRelations TPCTrackerHitRelations SETTrackerHitRelations  </parameter>
+  <!--Fit the Tracks with MarlinTrk using iterative approach. If 3 consecutive hits fail to be included then the current fit is written out and a new fit started. Use instead of FitTracksWithMarlinTrk.-->
+  <parameter name="UseIterativeFitting" type="bool">  true </parameter>
   <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
   <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
 </processor>
@@ -877,7 +879,7 @@
 <processor name="MyMarlinPandora" type="PandoraPFANewProcessor">
   <parameter name="PandoraSettingsXmlFile" type="String"> PandoraSettings.xml </parameter>
   <!-- Collection names -->
-  <parameter name="TrackCollections" type="StringVec">MarlinTrkTracks</parameter>
+  <parameter name="TrackCollections" type="StringVec"> MarlinTrkTracks </parameter>
   <parameter name="ECalCaloHitCollections" type="StringVec">ECALBarrel ECALEndcap ECALOther</parameter>
   <parameter name="HCalCaloHitCollections" type="StringVec">HCALBarrel HCALEndcap HCALOther</parameter>
   <parameter name="LCalCaloHitCollections" type="StringVec">LCAL</parameter>
@@ -1005,5 +1007,88 @@
 </processor>
 
 
+   <processor name="CEDViewer" type="CEDViewer">
+
+     <!--draw a helix for Track objects:0 none, 1: atIP, 2: atFirstHit, 3: atLastHit, 4: atCalorimeter-->
+     <parameter name="DrawHelixForTrack" type="int"> 0 </parameter>
+    
+     <!--minimum energy of MCParticles to be drawn-->
+     <parameter name="MCParticleEnergyCut" type="float"> 1. </parameter>
+
+    <!--draw detector from GEAR file with given ID (see MarlinCED::newEvent() ) : 0 ILD, -1 none-->
+     <parameter name="DrawDetectorID" type="int">0 </parameter>
+     
+     <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> MESSAGE  </parameter>    
+     
+     <!--collection to be displayed ( ColName, marker type[0-2], size)-->
+     <!-- 
+	  SeedCluster           0 4 1 
+	  LeftoverClusters      0 3 2
+	  ClupatraTrackSegments 0 4 3
+	  CluTrackSegments      0 3 4 
+     -->
+     <parameter name="DrawInLayer"> 
+       
+       VXDCollection 0 5 1
+       SITCollection 0 5 1
+       FTD_PIXELCollection 0 5 1
+       FTD_STRIPCollection 0 5 1
+       TPCCollection 0 3 1
+       SETCollection 0 3 1
+       ETDCollection 0 3 1
+       
+       VXDTrackerHits       1 10  11
+       SITTrackerHits       1 10  11
+       TPCTrackerHits       1  5  11
+       FTDTrackerHits       1 10  11
+
+       HcalEndCapsCollection       0 3 2
+       LHcalCollection             0 3 2
+       LumiCalCollection           0 3 2
+       MuonBarrelCollection        0 3 2
+       MuonEndCapCollection        0 3 2
+       EcalBarrelSiliconCollection 0 3 2  
+       EcalBarrelSiliconPreShower  0 3 2  
+       EcalEndcapRingCollection    0 3 2  
+       EcalEndcapRingPreShower     0 3 2  
+       EcalEndcapSiliconCollection 0 3 2  
+       EcalEndcapSiliconPreShower  0 3 2  
+       HcalBarrelRegCollection     0 3 2
+       HcalEndCapRingsCollection   0 3 2
+
+
+       HCALEndcap   0 5 12
+       HCALOther    0 5 12
+       MUON         0 2 12
+       LHCAL        0 3 12  
+       LCAL         0 3 12
+       BCAL         0 3 12
+       ECALBarrel   0 2 12
+       ECALEndcap   0 2 12
+       ECALOther    0 2 12
+       HCALBarrel   0 5 12
+
+       TruthTracks      0 3 3
+       ForwardTracks    0 3 4
+       SiTracks         0 3 5
+       ClupatraTracks   3 5 6
+       MarlinTrkTracks  3 3 7
+
+
+       PandoraClusters  0 3 8
+       PandoraPFOs      0 3 9
+       
+       MCParticle 0 3 0
+
+
+       TracksNotPassedToPFA          0 3 13
+       TracksCanFormPfo              0 3 14
+       TracksCanFormClusterlessPfo   0 3 15
+       TracksPassBothCanFormPfoFlags 0 3 16
+       TracksFailBothCanFormPfoFlags 0 3 17
+
+
+     </parameter>
+   </processor>
 
 </marlin>

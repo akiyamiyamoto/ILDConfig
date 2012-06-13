@@ -377,4 +377,5 @@
     <!-- Particle flow object modification algorithms -->
     <algorithm type = "FinalParticleId"/>
     <algorithm type = "V0PfoCreation"/>
+    <algorithm type = "DumpPfosMonitoring"/>
 </pandora>
