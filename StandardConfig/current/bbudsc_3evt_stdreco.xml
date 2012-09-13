@@ -26,8 +26,8 @@
      <processor name="FTDStripPlanarDigiProcessor"/>
      <processor name="FTDSpacePointBuilder"/>
 
-     <processor name="SETPlanarDigiProcessor"/>
-     <processor name="SETSpacePointBuilder" />
+     <!--processor name="SETPlanarDigiProcessor"/>
+     <processor name="SETSpacePointBuilder" /-->
 
      <processor name="MyTPCDigiProcessor"/>
      
