@@ -56,7 +56,7 @@
      <processor name="MySimpleMuonDigi"/>    
      
      <processor name="MyMarlinPandora"/>
-     <processor name="MyBCalReco"/>
+     <XXXprocessor name="MyBCalReco"/>
 
      <!-- ========== particle ID ============================ -->
      <!--processor name="MyPFOID" /-->
